@@ -28,7 +28,20 @@ Each module is broken into small steps. Every step gets its own commit and a che
 Steps are logged here as they're completed.
 
 ### Module 1 — Build an LLM Playground
-_(not started)_
+
+- [x] **Step 1 — Data collection.** `module1_llm_playground/data_collection/`
+  - `manual_crawl.py`: crawls a small set of Wikipedia seed pages, checking
+    `robots.txt` before each fetch, and extracts paragraph text via BeautifulSoup.
+  - `common_crawl.py`: streams a real Common Crawl WET file (finds the latest
+    crawl via the CC index, picks its first WET path, reads records with
+    `warcio`) and saves the first N plain-text conversion records — the same
+    raw source RefinedWeb/FineWeb/Dolma are built from.
+  - Run both: `python -m module1_llm_playground.data_collection.collect --source both`
+  - Bug found + fixed during testing: Python's `RobotFileParser.read()` silently
+    treats *every* URL as disallowed on sites like Wikipedia because it doesn't
+    strip the UTF-8 BOM at the start of `robots.txt`. Worked around by fetching
+    robots.txt with `requests`, decoding as `utf-8-sig`, and feeding the lines
+    to `parser.parse()` instead of `parser.read()`.
 
 ## Setup
 
