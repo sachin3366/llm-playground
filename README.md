@@ -43,6 +43,24 @@ Steps are logged here as they're completed.
     robots.txt with `requests`, decoding as `utf-8-sig`, and feeding the lines
     to `parser.parse()` instead of `parser.read()`.
 
+- [x] **Step 2 — Data cleaning.** `module1_llm_playground/data_cleaning/`
+  - `filters.py`: Gopher/RefinedWeb-style heuristics (min word count, mean
+    word length, alphabetic-word ratio, stopword presence, symbol ratio).
+  - `dedup.py`: exact paragraph-level dedup via SHA-256 of normalized text
+    (near-dup/MinHash skipped as overkill at this corpus size).
+  - `clean.py`: orchestrates normalize → English-language filter
+    (`langdetect`) → quality filters → dedup → `data/processed/corpus.txt`.
+  - Run: `python -m module1_llm_playground.data_cleaning.clean`
+  - Tested against real Step 1 output: 15 docs in, 9 dropped as non-English
+    (mostly the Common Crawl sample), 6 kept, 0 duplicate paragraphs (corpus
+    too small/diverse yet to trigger dedup).
+  - **Known limitation found in testing:** a Common Crawl record that was
+    just a generic "hosting provider placeholder" error page passed every
+    quality heuristic — it's grammatically valid English with normal word
+    length and stopword density, so nothing here flags it as boilerplate.
+    Real pipelines catch this with classifier/perplexity-based filtering or
+    template-dedup across domains; out of scope for this step's heuristics.
+
 ## Setup
 
 ```bash
