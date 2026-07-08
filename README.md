@@ -61,6 +61,22 @@ Steps are logged here as they're completed.
     Real pipelines catch this with classifier/perplexity-based filtering or
     template-dedup across domains; out of scope for this step's heuristics.
 
+- [x] **Step 3 — BPE tokenizer from scratch.** `module1_llm_playground/tokenizer/`
+  - `bpe.py`: byte-level BPE (GPT-2 style) implemented from scratch — text is
+    pre-split with GPT-2's regex (so merges never cross a word/punctuation/
+    whitespace boundary), converted to raw UTF-8 bytes (256 base tokens), then
+    the most frequent adjacent byte-pair is merged into a new token id,
+    repeated until `vocab_size` is reached. Supports `train`, `encode`,
+    `decode`, and JSON `save`/`load` of the learned merges.
+  - `train_tokenizer.py`: trains the tokenizer on `data/processed/corpus.txt`
+    and saves the learned merges to `data/tokenizer/merges.json`.
+  - Run: `python -m module1_llm_playground.tokenizer.train_tokenizer --verbose`
+  - Tested against real Step 2 output: trained a 1000-token vocab (744
+    merges) on the 159,791-byte corpus, compressing it to 57,497 tokens
+    (2.78x). Verified exact `decode(encode(x)) == x` roundtrip on the full
+    corpus plus edge cases (empty string, emoji/CJK unicode, whitespace-only
+    input).
+
 ## Setup
 
 ```bash
