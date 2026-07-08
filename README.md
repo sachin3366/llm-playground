@@ -77,6 +77,30 @@ Steps are logged here as they're completed.
     corpus plus edge cases (empty string, emoji/CJK unicode, whitespace-only
     input).
 
+- [x] **Step 4 — Transformer (GPT-style) architecture.** `module1_llm_playground/model/`
+  - `gpt.py`: a GPT-style transformer built from scratch in PyTorch —
+    `CausalSelfAttention` (multi-head self-attention with a triangular mask so
+    a position can only attend to itself and earlier positions), `FeedForward`
+    (the per-token MLP after attention), `Block` (pre-norm attention + MLP
+    with residual connections), and `GPT` (token + position embeddings ->
+    stacked blocks -> final layernorm -> linear head projecting to
+    vocab-sized logits). Written in a deliberately linear, one-concept-per-class
+    style with comments on tensor shapes and the "why" behind each step.
+  - `check_forward.py`: wires the model to the real Step 3 tokenizer and Step
+    2 corpus (not synthetic data) and checks: forward pass produces the
+    expected shapes and a loss near the random-guess baseline for an
+    untrained model; `backward()` gives every parameter a gradient; and —the
+    key correctness check for a causal model—editing a token near the end of
+    the input leaves every earlier position's logits byte-for-byte unchanged,
+    proving the model can't see the future.
+  - Run: `python -m module1_llm_playground.model.check_forward`
+  - Tested against real data: a 4-layer, 4-head, 128-dim model (~1.06M
+    params) sized to the Step 3 tokenizer's 1000-token vocab, run on batches
+    sliced from the real encoded corpus. Loss on the untrained model came out
+    to 7.09, close to the theoretical random-guess baseline of `ln(1000)` =
+    6.91 — exactly what an untrained model should produce. All gradient and
+    causal-masking checks passed.
+
 ## Setup
 
 ```bash
